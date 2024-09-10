@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import re
 
 import torch
 from torch.utils.data import Dataset
@@ -61,18 +62,23 @@ class KnowEditDataset(Dataset):
 
         data = []
         for i, record in enumerate(raw):
-            data.append(
-                {
-                    "subject":record["subject"] if "subject" in record else record["concept"],
-                    "prompt": record["prompt"] if "prompt" in record else record["text"],
-                    "target_new": record["target_new"] if "target_new" in record else record["labels"],
-                    "ground_truth": record["ground_truth"] if "ground_truth" in record else None,
-                    "portability_r": record["portability"]["Reasoning"] if "portability" in record and "Reasoning" in record["portability"] else None,
-                    "portability_s": record["portability"]["Subject_Aliasing"] if "portability" in record and "Subject_Aliasing" in record["portability"] else None,
-                    "portability_l":record["portability"]["Logical_Generalization"] if "portability" in record and "Logical_Generalization" in record["portability"] else None,
-                    "locality_rs": record["locality"]["Relation_Specificity"] if "Relation_Specificity" in record["locality"] else None,
-                    "locality_f": record["locality"]["Forgetfulness"] if "Forgetfulness" in record["locality"] else None
-                }
+            skip_indices = [37, 55, 122, 226, 326, 339, 340, 360, 396, 398, 410, 510, 655, 681, 704, 774, 804, 902, 1045, 1273, 1277, 1350, 1355, 1425]
+            if i not in skip_indices:
+                data.append(
+                    {
+                        "subject":record["subject"] if "subject" in record else record["concept"],
+                        "prompt": record["prompt"] if "prompt" in record else record["text"],
+                        "target_new": record["target_new"] if "target_new" in record else record["labels"],
+                        "ground_truth": record["ground_truth"] if "ground_truth" in record else None,
+                        "portability_r": record["portability"]["Reasoning"] if "portability" in record and "Reasoning" in record["portability"] else None,
+                        "portability_s": record["portability"]["Subject_Aliasing"] if "portability" in record and "Subject_Aliasing" in record["portability"] else None,
+                        "portability_l":record["portability"]["Logical_Generalization"] if "portability" in record and "Logical_Generalization" in record["portability"] else None,
+                        "locality_rs": record["locality"]["Relation_Specificity"] if "Relation_Specificity" in record["locality"] else None,
+                        "locality_f": record["locality"]["Forgetfulness"] if "Forgetfulness" in record["locality"] else None,
+                        "knowledge_triplet": record["Knowledge_triplet"] if "Knowledge_triplet" in record else None,
+                        "rephrased_f": record["Rephrased"]["Forward"] if "Forward" in record["Rephrased"] else None,
+                        "rephrased_b": record["Rephrased"]["Backward"] if "Backward" in record["Rephrased"] else None,
+                    }   
             )
 
         if size is not None:

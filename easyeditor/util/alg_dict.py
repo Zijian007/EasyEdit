@@ -14,7 +14,7 @@ from ..models.pmet import PMETHyperParams, apply_pmet_to_model
 from ..models.melo import MELOHyperParams, apply_melo_to_model
 from ..models.wise import WISEHyperParams, apply_wise_to_model
 from ..models.r_rome import R_ROMEHyperParams, apply_r_rome_to_model
-
+from ..models.bike import apply_bike_to_model
 ALG_DICT = {
     'ROME': apply_rome_to_model,
     'MEMIT': apply_memit_to_model,
@@ -30,7 +30,8 @@ ALG_DICT = {
     'PMET': apply_pmet_to_model,
     'MELO': apply_melo_to_model,
     'WISE': apply_wise_to_model,
-    'R-ROME': apply_r_rome_to_model
+    'R-ROME': apply_r_rome_to_model,
+    'BIKE': apply_bike_to_model
 }
 
 ALG_MULTIMODAL_DICT = {

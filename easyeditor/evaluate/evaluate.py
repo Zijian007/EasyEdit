@@ -3,8 +3,9 @@ Contains evaluation utilities for pytorch-based rewriting methods.
 To use, simply call `compute_rewrite_quality_zsre` with the
 appropriate arguments, which returns a dictionary containing them.
 """
-from ..models.melo.melo import LORA
-
+from easyeditor.models.melo.melo import LORA
+import sys
+# sys.path.append('/hdd/zijianwang/EasyEdit/easyeditor/evaluate')
 import typing
 from itertools import chain
 from typing import List, Optional
@@ -13,8 +14,8 @@ import numpy as np
 import torch
 # from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import AutoTokenizer
-from ..util import HyperParams
-from .evaluate_utils import (
+from easyeditor.util import HyperParams
+from easyeditor.evaluate.evaluate_utils import (
     test_seq2seq_batch_prediction_acc, 
     test_batch_prediction_acc, 
     test_prediction_acc,
@@ -52,7 +53,7 @@ def compute_edit_quality(
     :param vec: ???
     :return: Dictionary containing rewriting metrics
     """
-    if isinstance(model,LORA):
+    if isinstance(model, LORA):
         model=model.model
     # First, unpack rewrite evaluation record.
     target_new, ground_truth = (
@@ -61,15 +62,21 @@ def compute_edit_quality(
 
     rewrite_prompts = record["prompt"]
     rephrase_prompts = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
+    # if hasattr(model, "name") and model.name == "BIKE":
+    #     knowledge_triplet = record["knowledge_triplet"]
+    #     rephrased_f = record["rephrased_f"]
+    #     rephrased_b = record["rephrased_b"]
+    #     # New_knowledge = {"Head": Head, "Tail": Tail, "template1": Template_forward, "template2": Template_backward, "query": query}
+    #     knowledge_dict = {"Head": knowledge_triplet["Subject"], "Tail": knowledge_triplet["Object"], "rephrased_f": rephrased_f, "rephrased_b": rephrased_b, "query": rewrite_prompts}
+    #     model.edit()
     ret = compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
                                               rewrite_prompts, target_new, device=device, eval_metric=eval_metric)
-
     ret['locality'] = {}
     ret['portability'] = {}
     if rephrase_prompts is not None:
         ret.update(
             compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
-                                                rephrase_prompts, target_new, device=device, test_rephrase=True, eval_metric=eval_metric)
+                                                rephrase_prompts, target_new, device = device, test_rephrase = True, eval_metric = eval_metric)
         )
 
     if 'locality' in record.keys() and any(record['locality']):
@@ -77,14 +84,14 @@ def compute_edit_quality(
             ret['locality'].update(
                 compute_locality_quality(model, model_name, hparams, tok, locality_key,
                                          record['locality'][locality_key]['prompt'],
-                                         record['locality'][locality_key]['ground_truth'], device=device)
+                                         record['locality'][locality_key]['ground_truth'], device = device)
             )
     if 'portability' in record.keys() and any(record['portability']):
         for portability_key in record['portability'].keys():
             ret['portability'].update(
                 compute_portability_quality(model, model_name, hparams, tok, portability_key,
                                             record['portability'][portability_key]['prompt'],
-                                            record['portability'][portability_key]['ground_truth'], device=device)
+                                            record['portability'][portability_key]['ground_truth'], device = device)
             )
     if test_generation:
         if hparams.alg_name == 'GRACE':
@@ -304,7 +311,7 @@ def icl_lm_eval(
         icl_examples,
         target,
         x,
-        neighborhood=False
+        neighborhood = False
 )-> typing.Dict:
     device = torch.device(f'cuda:{hparams.device}')
     if 't5' in model_name.lower():
@@ -325,19 +332,19 @@ def icl_lm_eval(
         encodings = tokenizer(''.join(icl_examples) + f'{x} {target}', return_tensors='pt')
         input_ids = encodings['input_ids'].to(device)
         attention_mask = encodings['attention_mask'].to(device)
-        logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
-        ans = torch.argmax(logits, dim=-1)[:,-target_ids.size(1):-1].squeeze()
-        target_ids = target_ids[:,1:]
+        logits = model(input_ids = input_ids, attention_mask = attention_mask).logits
+        ans = torch.argmax(logits, dim = -1)[:, -target_ids.size(1) : -1].squeeze()
+        target_ids = target_ids[:, 1 : ]
         if neighborhood:
             return ans.squeeze().detach().cpu().numpy().tolist()
-        return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim=-1).detach().cpu().numpy().tolist()
+        return torch.mean((ans == target_ids.to(ans.device).squeeze()).float(), dim = -1).detach().cpu().numpy().tolist()
     else:
         target_ids = tokenizer(' ' + target + '\n', return_tensors='pt')['input_ids'].to(device)
         encodings = tokenizer(''.join(icl_examples) + f'{x} {target}', return_tensors='pt')
         input_ids = encodings['input_ids'].to(device)
         attention_mask = encodings['attention_mask'].to(device)
         logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
-        ans = torch.argmax(logits, dim=-1)[:,-target_ids.size(1):-1].squeeze()
+        ans = torch.argmax(logits, dim = -1)[:,-target_ids.size(1) : -1].squeeze()
         target_ids = target_ids[:,:-1]
         if neighborhood:
             return ans.squeeze().detach().cpu().numpy().tolist()

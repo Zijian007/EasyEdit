@@ -30,7 +30,7 @@ def summary_metrics(all_metrics):
         os.makedirs(logs_dir)
     output_file = os.path.join(logs_dir, 'results.json')
     with open(output_file, 'w') as f:
-        json.dump(all_metrics, f, ensure_ascii=False, indent=4)
+        json.dump(all_metrics, f, ensure_ascii = False, indent = 4)
 
     mean_metrics = dict()
     for eval in ["pre", "post"]:
@@ -49,7 +49,7 @@ def summary_metrics(all_metrics):
                     #     [metric[eval][key][lkey] for metric in all_metrics])
     # mean_metrics["time"] = np.mean([metric["time"] for metric in all_metrics])
 
-    print("Metrics Summary: ", mean_metrics)
+    # print("Metrics Summary: ", mean_metrics)
 
 def _prepare_requests(prompts: Union[str, List[str]],
                       target_new: Union[str, List[str]],
@@ -69,7 +69,39 @@ def _prepare_requests(prompts: Union[str, List[str]],
     }
     for prompt, ground_truth_, target_new_ in zip(prompts, ground_truth, target_new)
     ]
-
+    if "knowledge_triplet" in kwargs:
+        if isinstance(kwargs['knowledge_triplet'], str):
+            kwargs['knowledge_triplet'] = [kwargs['knowledge_triplet'],]
+        else:
+            assert len(kwargs['knowledge_triplet']) == len(prompts)
+        for i, request in enumerate(requests):
+            request.update(
+                {
+                    'knowledge_triplet': kwargs['knowledge_triplet'][i]
+                }
+            )
+    if "rephrased_f" in kwargs:
+        if isinstance(kwargs['rephrased_f'], str):
+            kwargs['rephrased_f'] = [kwargs['rephrased_f'],]
+        else:
+            assert len(kwargs['rephrased_f']) == len(prompts)
+        for i, request in enumerate(requests):
+            request.update(
+                {
+                    'rephrased_f': kwargs['rephrased_f'][i]
+                }
+            )
+    if "rephrased_b" in kwargs:
+        if isinstance(kwargs['rephrased_b'], str):
+            kwargs['rephrased_b'] = [kwargs['rephrased_b'],]
+        else:
+            assert len(kwargs['rephrased_b']) == len(prompts)
+        for i, request in enumerate(requests):
+            request.update(
+                {
+                    'rephrased_b': kwargs['rephrased_b'][i]
+                }
+            )
     if 'subject' in kwargs:
         if isinstance(kwargs['subject'], str):
             kwargs['subject'] = [kwargs['subject'],]

@@ -3,9 +3,9 @@ import numpy as np
 import scipy
 import nltk
 import typing
-from ..util.generate import generate_fast
+from easyeditor.util.generate import generate_fast
 import torch.nn.functional as F
-from ..trainer import *
+from easyeditor.trainer import *
 from sklearn.metrics import f1_score
 import openai
 
@@ -77,7 +77,7 @@ def test_seq2seq_batch_prediction_acc(model, tok, hparams, prompts, targets, dev
             return answers if type(answers[0]) is list else [answers,]
         return torch.mean((trg_tok['input_ids'][:,:-1] == ans[:,:-1]).float(), dim=-1).detach().cpu().numpy().tolist()
 
-def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=False, vanilla_generation=False):
+def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality = False, vanilla_generation = False):
     if vanilla_generation:
         if isinstance(prompts, str):
             prompts, targets = [prompts, ], [targets, ]
@@ -102,41 +102,44 @@ def test_prediction_acc(model, tok, hparams, prompts, targets, device, locality=
         return results
 
     if isinstance(prompts, str):
-        prompts,targets = [prompts,], [targets,]
-    prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts,targets)]
+        prompts, targets = [prompts,], [targets,]
+    prompt_target = [prompt + ' ' + target for prompt, target in zip(prompts, targets)]
     max_prompt_len = max([len(tok.encode(_)) for _ in prompt_target]) + 1
     prompt_target_tok = tok(
         prompt_target,
-        padding=True,
-        truncation=True,
-        max_length=max(hparams.max_length, max_prompt_len),
+        padding = True,
+        truncation = True,
+        max_length = max(hparams.max_length, max_prompt_len),
         return_tensors="pt",
     ).to(f"cuda:{device}")
     prompt_tok = tok(
         prompts,
-        padding=True,
-        truncation=True,
-        max_length=max(hparams.max_length, max_prompt_len),
-        return_tensors="pt",
+        padding = True,
+        truncation = True,
+        max_length = max(hparams.max_length, max_prompt_len),
+        return_tensors = "pt",
     )
     num_prompt_toks = [int((i != tok.pad_token_id).sum()) for i in prompt_tok['input_ids']]
     num_pad_toks = [int((i == tok.pad_token_id).sum()) for i in prompt_target_tok['input_ids'].cpu()]
-    prompt_len = [x+y for x,y in zip(num_pad_toks,num_prompt_toks)]
+    prompt_len = [x + y for x, y in zip(num_pad_toks, num_prompt_toks)]
     with torch.no_grad():
-        outputs = model(**prompt_target_tok)
+        if hparams.alg_name == "BIKE":
+            outputs = model.forward(**prompt_target_tok)
+        else:
+            outputs = model(**prompt_target_tok)
         if type(outputs) is torch.Tensor:
             logits = outputs
         else:
             logits = outputs.logits
         answers = torch.argmax(logits, dim=-1).squeeze().detach().cpu().numpy().tolist()
         labels = prompt_target_tok['input_ids'].squeeze().detach().cpu().numpy().tolist()
-        answers = slice_list(answers,prompt_len,left=True)
-        labels = slice_list(labels,prompt_len,left=False)
+        answers = slice_list(answers, prompt_len, left=True)
+        labels = slice_list(labels, prompt_len, left=False)
         if locality:
             return answers if type(answers[0]) is list else [answers,]
         if isinstance(answers[0], list):
             res = []
-            for ans,label in zip(answers,labels):
+            for ans,label in zip(answers, labels):
                 temp_acc = np.mean(np.equal(ans, label))
                 if np.isnan(temp_acc):
                     continue
@@ -160,8 +163,8 @@ def test_generation_quality_serac(
         return_tensors="pt",
     )
     prompt_tok_length=len(prompt_tok['input_ids'])
-    gen_texts=model.generate(**prompt_tok,max_new_tokens=256)
-    if isinstance(model,SERAC):
+    gen_texts=model.generate(**prompt_tok, max_new_tokens=256)
+    if isinstance(model, SERAC):
         gen_texts=tok.decode(gen_texts[prompt_tok_length:])
         gen_texts=[gen_texts]
         print(len(gen_texts))
@@ -206,7 +209,7 @@ def n_gram_entropy(gen_texts, agg="arith"):
         [compute_n_gram_entropy(txt) for txt in gen_texts]
     ).item()
 
-def compute_n_gram_entropy(sentence, ns=None, weights=None, agg="arith"):
+def compute_n_gram_entropy(sentence, ns = None, weights = None, agg = "arith"):
     if ns is None:
         ns = [2, 3]
     if weights is None:

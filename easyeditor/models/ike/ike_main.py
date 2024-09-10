@@ -20,7 +20,7 @@ def apply_ike_to_model(
     copy=False,
     return_orig_weights=False,
     keep_original_weight=False,
-    train_ds=None,
+    train_ds = None,
     **kwargs: Any,
 ) -> Tuple[AutoModelForCausalLM, Dict[str, Any]]:
 
@@ -45,7 +45,7 @@ def apply_ike_to_model(
     query_embedding = util.normalize_embeddings(torch.tensor(sentence_model.encode(
         query_sentence, show_progress_bar=False)).unsqueeze(0).to(device))
 
-    hits = util.semantic_search(query_embedding, stored_embeddings, score_function=util.dot_score, top_k=hparams.k)
+    hits = util.semantic_search(query_embedding, stored_embeddings, score_function = util.dot_score, top_k = hparams.k)
     assert len(hits) == 1
     hit = hits[0]
     icl_examples = [stored_sentences[hit[k]["corpus_id"]] for k in range(len(hit))]

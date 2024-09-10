@@ -1,8 +1,11 @@
 import os
 import os.path
 import sys
+
 import json
 import random
+import collections
+from pyparsing import replaceHTMLEntity
 sys.path.append('..')
 from easyeditor import (
     FTHyperParams, 
@@ -12,13 +15,15 @@ from easyeditor import (
     ROMEHyperParams, 
     LoRAHyperParams,
     MENDHyperParams,
-    SERACHparams
+    SERACHparams,
+    BIKEHyperParams
     )
 from easyeditor import BaseEditor
 from easyeditor.models.ike import encode_ike_facts
 from sentence_transformers import SentenceTransformer
 from easyeditor import KnowEditDataset
-
+import nltk
+nltk.download('punkt')
 import argparse
 
 if __name__ == "__main__":
@@ -31,7 +36,7 @@ if __name__ == "__main__":
     parser.add_argument('--datatype', default=None,type=str)
     parser.add_argument('--train_data_path', type=str)
     parser.add_argument('--pre_file', default='./seq_pre.json', type=str)
-
+    parser.add_argument('--datadir', type=str)
     args = parser.parse_args()
 
     if args.editing_method == 'FT':
@@ -46,16 +51,20 @@ if __name__ == "__main__":
         editing_hparams = ROMEHyperParams
     elif args.editing_method == 'LoRA':
         editing_hparams = LoRAHyperParams
+    elif args.editing_method == 'BIKE':
+        editing_hparams = BIKEHyperParams
     else:
         raise NotImplementedError
     
-
-    datas = KnowEditDataset(args.data_dir,size=args.ds_size)
+    datas = KnowEditDataset(args.data_dir, size=args.ds_size)
     if args.datatype == 'counterfact' or args.datatype == 'recent' or args.datatype == 'zsre':
         prompts=[data['prompt'] for data in datas]
         subjects=[data['subject'] for data in datas]
         target_new = [data['target_new'] for data in datas]
-        
+        knowledge_triplet = [data['knowledge_triplet'] for data in datas]
+        rephrased_f = [data['rephrased_f'] for data in datas]
+        rephrased_b = [data['rephrased_b'] for data in datas]
+
         portability_r =[data['portability_r'] for data in datas]
         portability_s =[data['portability_s'] for data in datas]
         portability_l =[data['portability_l'] for data in datas]
@@ -67,10 +76,10 @@ if __name__ == "__main__":
         portability_Subject_Aliasing_prompts=[]
         portability_Subject_Aliasing_ans=[]
         
-        portability_data = [portability_r,portability_s,portability_l]
-        portability_prompts = [portability_reasoning_prompts,portability_Subject_Aliasing_prompts,portability_Logical_Generalization_prompts]
-        portability_answers = [portability_reasoning_ans,portability_Subject_Aliasing_ans,portability_Logical_Generalization_ans]
-        for data, portable_prompts, portable_answers in zip(portability_data,portability_prompts,portability_answers):
+        portability_data = [portability_r, portability_s, portability_l]
+        portability_prompts = [portability_reasoning_prompts, portability_Subject_Aliasing_prompts, portability_Logical_Generalization_prompts]
+        portability_answers = [portability_reasoning_ans, portability_Subject_Aliasing_ans, portability_Logical_Generalization_ans]
+        for data, portable_prompts, portable_answers in zip(portability_data, portability_prompts, portability_answers):
             for item in data:
                 if item is None:
                     portable_prompts.append(None)
@@ -99,8 +108,8 @@ if __name__ == "__main__":
         locality_Forgetfulness_ans=[]
         
         locality_data = [locality_rs, locality_f]
-        locality_prompts = [locality_Relation_Specificity_prompts,locality_Forgetfulness_prompts]
-        locality_answers = [locality_Relation_Specificity_ans,locality_Forgetfulness_ans]
+        locality_prompts = [locality_Relation_Specificity_prompts, locality_Forgetfulness_prompts]
+        locality_answers = [locality_Relation_Specificity_ans, locality_Forgetfulness_ans]
         for data, local_prompts, local_answers in zip(locality_data,locality_prompts,locality_answers):
             for item in data:
                 if item is None:
@@ -114,7 +123,7 @@ if __name__ == "__main__":
                         an=pr["ground_truth"]
                         while isinstance(an,list):
                             an = an[0]
-                        if an.strip() =="":
+                        if an.strip() == "":
                             continue
                         temp_prompts.append(prompt)
                         temp_answers.append(an)
@@ -191,7 +200,7 @@ if __name__ == "__main__":
         }
     
     hparams = editing_hparams.from_hparams(args.hparams_dir)
-    args.pre_file = f"./{hparams.model_name.split('/')[-1]}_{args.datatype}_pre_edit.json"
+    args.pre_file = f"./output/Pre_Result_{hparams.alg_name}_{hparams.model_name.split('/')[-1]}_{args.datadir}_pre_edit.json"
     print(args.pre_file)
     if args.pre_file is not None and os.path.exists(args.pre_file):
         pre_edit = json.load(open(args.pre_file,'r'))
@@ -211,12 +220,65 @@ if __name__ == "__main__":
         subject=subjects,
         locality_inputs=locality_inputs,
         portability_inputs=portability_inputs,
+        knowledge_triplet = knowledge_triplet,
+        rephrased_f = rephrased_f,
+        rephrased_b = rephrased_b,
         train_ds=train_ds,
         keep_original_weight=True,
         pre_file=args.pre_file,
         pre_edit = pre_edit,
-        test_generation=True,
+        test_generation=False,
     )
     if not os.path.exists(args.metrics_save_dir):
         os.makedirs(args.metrics_save_dir)
-    json.dump(metrics, open(os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datatype}_{hparams.model_name.split("/")[-1]}_results.json'), 'w'), indent=4)
+    json.dump(metrics, open(os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datadir}_{hparams.model_name.split("/")[-1]}_results.json'), 'w'), indent=4)
+    print("Metrics saved at:",os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datadir}_{hparams.model_name.split("/")[-1]}_results.json'))
+    def calculate_metrics(file_path):
+        with open(file_path, 'r') as file:
+            datas = json.load(file)
+
+        Edit_Succ_list = [data_rome_counterfact['post']['rewrite_acc'][0] for data_rome_counterfact in datas]
+        Edit_Succ = sum(Edit_Succ_list) / len(Edit_Succ_list) * 100
+        print('Edit_Succ:', Edit_Succ)
+
+        Portability_list = []
+        portability_dict = collections.defaultdict(list)
+        for data_rome_counterfact in datas:
+            metrics = []
+            for key in data_rome_counterfact['post']['portability'].keys():
+                metrics = metrics + data_rome_counterfact['post']['portability'][key]
+                portability_dict[key].extend(data_rome_counterfact['post']['portability'][key])
+            if len(metrics) == 0:
+                continue
+            portability = sum(metrics) / len(metrics) * 100
+            Portability_list.append(portability)
+        if len(Portability_list) == 0:
+            print('Portability:', 0)
+        else:
+            Portability = sum(Portability_list) / len(Portability_list)
+            print('Portability:', Portability)
+        for key in portability_dict.keys():
+            portability = sum(portability_dict[key]) / len(portability_dict[key]) * 100
+            print(f'Portability ({key}):', portability)
+
+        Locality_list = []
+        for data_rome_counterfact in datas:
+            metrics = []
+            for key in data_rome_counterfact['post']['locality'].keys():
+                metrics = metrics + data_rome_counterfact['post']['locality'][key]
+            if len(metrics) == 0:
+                continue
+            locality = sum(metrics) / len(metrics) * 100
+            Locality_list.append(locality)
+        if len(Locality_list) == 0:
+            print('Locality:', 0)
+        else:
+            Locality = sum(Locality_list) / len(Locality_list)
+            print('Locality:', Locality)
+
+        # Fluency_list = [x['post']['fluency']['ngram_entropy'] for x in datas]
+        # Fluency = sum(Fluency_list) / len(Fluency_list) * 100
+        # print('Fluency:', Fluency)
+    
+
+    calculate_metrics(os.path.join(args.metrics_save_dir, f'{args.editing_method}_{args.datadir}_{hparams.model_name.split("/")[-1]}_results.json'))

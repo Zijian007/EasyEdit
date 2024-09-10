@@ -1,0 +1,10 @@
+alg_name: "BIKE"
+model_name: "meta-llama/Llama-2-7b-hf"
+device: 0
+results_dir: "./results"
+model_parallel: false
+fp16: True
+max_length: 20
+weight_f: 10
+weight_g: 0.5
+weight_patch: 1.0

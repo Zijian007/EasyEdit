@@ -1,3 +1,4 @@
+import sys
 from typing import Optional, Union, List, Tuple, Dict
 from time import time
 from tqdm import tqdm
@@ -5,24 +6,29 @@ import json
 import torch
 import numpy as np
 import random
-from ..models.melo.melo import LORA
+from easyeditor.models.melo.melo import LORA
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import GPT2TokenizerFast, GPT2Tokenizer
-from ..util.globals import *
-from .utils import _chunks, _prepare_requests, summary_metrics
+from easyeditor.util.globals import *
+from easyeditor.editors.utils import _chunks, _prepare_requests, summary_metrics
 from .batch_editor import BatchEditor
-from ..evaluate import compute_edit_quality, compute_icl_edit_quality, compute_sent_metric
-from ..util import nethook
-from ..util.hparams import HyperParams
-from ..util.alg_dict import *
+from easyeditor.evaluate import compute_edit_quality, compute_icl_edit_quality, compute_sent_metric
+from easyeditor.util import nethook
+# from ..util.hparams import HyperParams
+from easyeditor.util.hparams import HyperParams
 
+from easyeditor.util.alg_dict import *
+# print(f"sys.path from /hdd/zijianwang/EasyEdit/easyeditor/editors/editor.py: {sys.path}")
+# print(sys.modules.keys())
+# sys.exit()
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
                     level = logging.INFO)
 
 LOG = logging.getLogger(__name__)
+
 def make_logs():
 
     f_h, s_h = get_handler('logs', log_name='run.log')
@@ -46,7 +52,7 @@ seed_everything(42)
   
 class BaseEditor:
     """Base editor for all methods"""
-
+    
     @classmethod
     def from_hparams(cls, hparams: HyperParams):
         return cls(hparams)
@@ -68,12 +74,16 @@ class BaseEditor:
             elif 'gpt-3.5' in self.model_name.lower():
                 self.model, self.tok = None, None
             elif 'gpt' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch_dtype, device_map=device_map)
-                self.tok = GPT2Tokenizer.from_pretrained(self.model_name)
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir = "/hdd/zijianwang/HF_CACHE", torch_dtype=torch_dtype, device_map=device_map)
+                self.tok = GPT2Tokenizer.from_pretrained(self.model_name, cache_dir = "/hdd/zijianwang/HF_CACHE")
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'llama' in self.model_name.lower():
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch_dtype, device_map=device_map)
-                self.tok = AutoTokenizer.from_pretrained(self.model_name)
+                # self.mt = ModelAndTokenizer(self.model_name, device, cache_dir = "/hdd/zijianwang/HF_CACHE")
+                # self.model = self.mt.model
+                # self.tok = self.mt.tokenizer
+                # self.tok.pad_token_id = self.tok.eos_token_id
+                self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir="/hdd/zijianwang/HF_CACHE", torch_dtype=torch.bfloat16, device_map="cuda:{}".format(hparams.device))
+                self.tok = AutoTokenizer.from_pretrained(self.model_name,cache_dir="/hdd/zijianwang/HF_CACHE")
                 self.tok.pad_token_id = self.tok.eos_token_id
             elif 'baichuan' in self.model_name.lower():
                 self.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch_dtype, trust_remote_code=True, device_map=device_map)
@@ -155,8 +165,9 @@ class BaseEditor:
             requests = kwargs["requests"]
         else:
             requests = _prepare_requests(prompts, target_new, ground_truth, rephrase_prompts, locality_inputs, portability_inputs, **kwargs)
-
-        return self.edit_requests(requests, sequential_edit, verbose, test_generation=test_generation, **kwargs)
+        ##
+        
+        return self.edit_requests(requests, sequential_edit, verbose, test_generation = test_generation, **kwargs)
 
     def batch_edit(self,
                    prompts: List[str],
@@ -211,14 +222,12 @@ class BaseEditor:
             start = time()
             chunk_metrics = []
             for i, request in enumerate(record_chunks):
-
                 metrics = {
                     'case_id': i,
                     "requested_rewrite": request,
                     "time": exec_time,
                     "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, test_generation=test_generation),
                 }
-
                 chunk_metrics.append(metrics)
 
             with torch.no_grad():
@@ -265,10 +274,10 @@ class BaseEditor:
                     assert 'train_ds' in kwargs.keys(), print('IKE need train_ds(For getting In-Context prompt)')
                     metrics = {"pre": compute_icl_edit_quality(self.model, self.model_name, self.hparams, self.tok, [''], request, self.hparams.device, pre_edit=True)}
                 else:
-                    metrics = {"pre": compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric=eval_metric, test_generation=test_generation)}
+                    metrics = {"pre": compute_edit_quality(self.model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric = eval_metric, test_generation = test_generation)}
                 all_metrics.append(metrics)
             if 'pre_file' in kwargs and kwargs['pre_file'] is not None:
-                json.dump(all_metrics, open(kwargs['pre_file'], 'w'), indent=4)
+                json.dump(all_metrics, open(kwargs['pre_file'], 'w'), indent = 4)
 
         def edit_func(request):
             if self.alg_name == 'IKE':
@@ -277,10 +286,21 @@ class BaseEditor:
                     self.tok,
                     [request],
                     self.hparams,
-                    copy=False,
+                    copy = False,
                     return_orig_weights=True,
                     keep_original_weight=False,
                     train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
+                )
+            elif self.alg_name == 'BIKE':
+                edited_model, weights_copy, icl_examples =  self.apply_algo(
+                    self.model,
+                    self.tok,
+                    [request],
+                    self.hparams,
+                    copy = False,
+                    return_orig_weights = False,
+                    keep_original_weight=False,
+                    train_ds = None
                 )
             else:
                 edited_model, weights_copy = self.apply_algo(
@@ -288,13 +308,14 @@ class BaseEditor:
                     self.tok,
                     [request],
                     self.hparams,
-                    copy=False,
-                    return_orig_weights=True,
-                    keep_original_weight=False,
+                    copy = False,
+                    return_orig_weights = True,
+                    keep_original_weight = False,
                     train_ds=kwargs['train_ds'] if self.alg_name == 'IKE' else None
                 )
                 icl_examples = None
             return edited_model, weights_copy, icl_examples
+        
         def edit_evaluation(all_metrics, request, edited_model, idx, eval_metric, test_generation, icl_examples, **kwargs):
             if self.alg_name == 'IKE':
                 all_metrics[idx].update({
@@ -306,7 +327,7 @@ class BaseEditor:
                 all_metrics[idx].update({
                     'case_id': idx,
                     "requested_rewrite": request,
-                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric=eval_metric, test_generation=test_generation),
+                    "post": compute_edit_quality(edited_model, self.model_name, self.hparams, self.tok, request, self.hparams.device, eval_metric = eval_metric, test_generation = test_generation),
                 })
                 if "metric_kwargs" in kwargs:
                     all_metrics[idx].update(compute_sent_metric(self.model, edited_model, self.model_name, self.hparams, self.tok,metric_kwargs=kwargs["metric_kwargs"][idx], device=self.hparams.device))
@@ -330,6 +351,8 @@ class BaseEditor:
                 edit_evaluation(all_metrics, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
         else:
             for i, request in enumerate(tqdm(requests, total=len(requests))):
+                # skip_indices = [37, 55, 122, 226, 326, 339, 340, 360, 396, 398, 410, 510, 655, 681, 704, 774, 804, 902, 1045, 1273, 1277, 1350, 1355, 1425]
+                # if i not in skip_indices:
                 edited_model, weights_copy, icl_examples = edit_func(request)
                 edit_evaluation(all_metrics, request, edited_model, i, eval_metric, test_generation, icl_examples, **kwargs)
                 if self.alg_name == 'KN' or self.alg_name == 'GRACE' or self.alg_name == 'WISE':
@@ -344,7 +367,6 @@ class BaseEditor:
                     with torch.no_grad():
                         for k, v in weights_copy.items():
                             nethook.get_parameter(self.model, k)[...] = v.to(f"cuda:{self.hparams.device}")
-
 
         if isinstance(edited_model, LORA):
             edited_model = edited_model.model

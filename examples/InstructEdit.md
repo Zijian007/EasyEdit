@@ -1,6 +1,4 @@
-<h1 align="center"><img src="../figs/instructedit.png" width="25" height="25">InstructEdit</h1>
-
-**InstructEdit: Instruction-Based Knowledge Editing for Large Language Models**
+<h1 align="center"><img src="../figs/instructedit.png" width="25" height="25">InstructEdit: Instruction-Based Knowledge Editing for Large Language Models</h1>
 
 <p align="center">
   📃 <a href="https://arxiv.org/abs/2402.16123" target="_blank">ArXiv</a> • 🤗 <a href="https://huggingface.co/papers/2402.16123" target="_blank">HF Paper</a> <br>
@@ -43,7 +41,7 @@ The files `test_cf.json`, `recent_test.json`, and `zsre_mend_eval_portability_gp
 
 + ## Training *InstructEdit*
 
-    - Training **InstructEdit** with `GPT-XL`:.
+    - Training **InstructEdit** with `GPT-XL`:
 
     ```python
     from easyeditor import BaseEditor

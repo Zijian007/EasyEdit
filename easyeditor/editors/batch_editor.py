@@ -9,8 +9,10 @@ class BatchEditor(Enum):
     MEMIT = 'MEMIT'
     PMET = 'PMET'
     FT = 'FT'
+    QLoRA = 'QLoRA'
     LoRA = 'LoRA'
     KN = 'KN'
+    EMMET = "EMMET"
 
 
     @staticmethod
@@ -23,5 +25,7 @@ class BatchEditor(Enum):
             or alg_name == BatchEditor.PMET.value \
             or alg_name == BatchEditor.FT.value \
             or alg_name == BatchEditor.KN.value \
-            or alg_name == BatchEditor.LoRA.value
+            or alg_name == BatchEditor.QLoRA.value \
+            or alg_name == BatchEditor.LoRA.value \
+            or alg_name == BatchEditor.EMMET.value
 

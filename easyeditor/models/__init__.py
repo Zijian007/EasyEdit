@@ -12,5 +12,10 @@ from .malmen import *
 from .dinm import *
 from .wise import *
 from .r_rome import *
+<<<<<<< HEAD
 from .bike import *
 
+=======
+from .qlora import *
+from .lora import *
+>>>>>>> 465f8d8b207661b0b6c687715a014d209ead6e48

@@ -42,7 +42,6 @@
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
     - [🔧Pip Installation](#🔧pip-installation)
-    - [🐳Docker Installation](#🐳docker-installation)
     - [Editing GPU memory usage](#editing-gpu-memory-usage)
 - [📌Use EasyEdit](#📌use-easyedit)
   - [BaseEditor](#baseeditor)
@@ -65,10 +64,14 @@
     | **COLING2024 tutorial**| Knowledge Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/1vFzRYjnzkuZaNdjdIxQwWbEybCY7YqY9/view?usp=sharing)   |
     | VALSE2024 tutorial| Knowledge Mechanism and Editing for Large Language Models| [Google Drive](https://drive.google.com/file/d/19T-InKopH-VHKAtphy9M6H366dXnenQX/view?usp=sharing)   |
     | AAAI2024 tutorial | Knowledge Editing for Large Language Models    | [Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)   |
-    
+
+- 2024-07-29, The EasyEdit has added a new model editing algorithm [EMMET](https://arxiv.org/abs/2403.14236), which generalizes ROME to the batch setting. This essentially allows making batched edits using the ROME loss function.
+
+- 2024-07-23, We release a new paper: "[Knowledge Mechanisms in Large Language Models: A Survey and Perspective](https://arxiv.org/abs/2407.15017)", which reviews how knowledge is acquired, utilized, and evolves in large language models. This survey may provide the fundamental mechanisms for precisely and efficiently manipulating (editing) knowledge in LLMs.
+
 - 2024-06-04, 🎉🎉 [EasyEdit Paper](https://arxiv.org/abs/2308.07269) has been accepted by the **ACL 2024** System Demonstration Track.
 
-- 2024-06-03, We released a paper titled **["WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models"](https://arxiv.org/abs/2405.14768)**, along with introducing **a new editing task: [Continuous Knowledge Editing](#continuous-knowledge-editing)** and correspondding **lifelong editing method** called [WISE](https://github.com/zjunlp/EasyEdit/tree/main/easyeditor/models/wise).
+- 2024-06-03, We released a paper titled **["WISE: Rethinking the Knowledge Memory for Lifelong Model Editing of Large Language Models"](https://arxiv.org/abs/2405.14768)**, along with introducing **a new editing task: [Continuous Knowledge Editing](#continuous-knowledge-editing)** and correspondding **lifelong editing method** called [WISE](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md).
 
 - 2024-04-24, EasyEdit announced support for the **ROME method for [Llama3-8B](https://huggingface.co/meta-llama/Meta-Llama-3-8B)**. Users are advised to update their transformers package to version 4.40.0.
 
@@ -85,13 +88,13 @@
 
 <details>
 <summary><b>Previous News</b></summary>
+  
 - **2024-02-09 The EasyEdit has added the support for the Dynamic LoRA model editing method [MELO'AAAI24](https://arxiv.org/abs/2312.11795).**
 - **2024-02-06 We release a new paper: "[EasyInstruct: An Easy-to-use Instruction Processing Framework for Large Language Models](https://arxiv.org/abs/2402.03049)" with an HF demo [EasyInstruct](https://huggingface.co/spaces/zjunlp/EasyInstruct).**
 - **2024-02-06 We release a preliminary tool [EasyDetect](https://github.com/OpenKG-ORG/EasyDetect) for LLM hallucination detection，with a [demo](http://easydetect.openkg.cn/)**.
 - **2024-01-24 The EasyEdit has added the support for editing [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) (manually update transformers==4.34.0), we have also fixed some bugs in evaluating MEND (slightly influence the performance).**
 - **2024-01-16 The EasyEdit has added the support for the precise model editing method [PMET'AAAI24](https://arxiv.org/abs/2308.08742).**
 - **2024-01-03  We release a new paper:"[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" with a new benchmark [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit)! KnowEdit is constructed by re-organizing and cleaning exsiting datasests including WikiBio, ZsRE, WikiData Counterfact, WikiData Recent, convsent, Sanitation with new train/val/test spliting. Special thanks to the builders and maintainers of the those datasets.We are looking forward to any comments or discussions on this topic :)**
-
 - **2023-12-06 The EasyEdit has added the support for the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).**
 - **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
 - **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
@@ -152,8 +155,10 @@ $$\theta' \leftarrow \text{arg} \min\limits_{\theta} (\Vert f_\theta(x_e) - y_e 
 #### Continuous Knowledge Editing
 
 This requires **sequentially editing**, and evaluation is performed after all knowledge updates have been applied:
+
 $$\theta' \leftarrow \text{arg} \min\limits_{\theta} \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
-It makes parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**
+
+It makes parameter adjustments for $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$​ represents the whole **edit set**. To enable continuous editing, you can set **`sequential_edit=True`**: [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/WISE.md) (for more details).
 
 ### Multi Scenario
 
@@ -256,7 +261,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   
   - Memory-based: [SERAC](https://github.com/eric-mitchell/serac), [IKE](https://github.com/Zce1112zslx/IKE), [GRACE](https://github.com/thartvigsen/grace), [MELO](https://github.com/ECNU-ICALK/MELO), [WISE](https://arxiv.org/abs/2405.14768)
   - Meta-learning: [MEND](https://github.com/eric-mitchell/mend), [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md), [MALMEN](https://github.com/ChenmienTan/malmen)
-  - Locate-then-edit: [KN](https://github.com/Hunter-DDM/knowledge-neurons), [ROME](https://github.com/kmeng01/rome), [MEMIT](https://github.com/kmeng01/memit), [PMET](https://github.com/xpq-tech/PMET), [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)
+  - Locate-then-edit: [KN](https://github.com/Hunter-DDM/knowledge-neurons), [ROME](https://github.com/kmeng01/rome), [MEMIT](https://github.com/kmeng01/memit), [PMET](https://github.com/xpq-tech/PMET), [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md), [R-ROME](https://github.com/scalable-model-editing/rebuilding-rome), [EMMET](https://github.com/scalable-model-editing/unified-model-editing)
   - [FT-L](https://github.com/kmeng01/rome)
   > Note 1: Due to the limited compatibility of this toolkit, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
   > are not supported. 
@@ -265,10 +270,10 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
 #### Current Implementation
 
 You can choose different editing methods according to your specific needs.
-| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM2 | InternLM | Qwen | Mistral
+| **Method** | T5 | GPT-2 | GPT-J | GPT-NEO | LlaMA | Baichuan | ChatGLM | InternLM | Qwen | Mistral
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
 | FT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| AdaLoRA |  |  |  |  | ✅ |  |  | | | |
+| AdaLoRA |  |  |  |  | ✅ |  | ✅ | | | |
 | SERAC | ✅ | ✅ | ✅ | | ✅ |  | |  | | |
 | IKE | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |✅  | ✅ | ✅ | ✅ |
 | MEND | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -276,6 +281,7 @@ You can choose different editing methods according to your specific needs.
 | ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
 | r-ROME | | ✅ | ✅ | ✅ | ✅ | ✅ |✅ | ✅ | ✅ | ✅ |
 | MEMIT | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅| ✅ | ✅ | ✅ |
+| EMMET | | ✅ | ✅ |    | ✅ |    |   |    |    |    |
 | GRACE | | ✅| ✅ |  |  ✅|  |  |  | | |
 | MELO | |✅ |  |  |  |  |  |  | | |
 | PMET | | | ✅ |  |  ✅|  |  |  | | |
@@ -558,33 +564,7 @@ conda create -n EasyEdit python=3.9.7
 pip install -r requirements.txt
 ```
 
-#### 🐳Docker Installation
 
-We packaged the environment, you can download Docker from [this link](https://docs.docker.com/get-docker/).
-
-Pull the Docker image from Docker Hub or Aliyun:
-
-```bash
-docker pull zjunlp/easyedit
-```
-
-```bash
-docker pull registry.cn-hangzhou.aliyuncs.com/zjunlp/easyedit:v1
-```
-
-If you want to build the Docker image locally, you can clone the project to your local machine and build the Docker image:
-
-```bash
-git clone https://github.com/zjunlp/EasyEdit.git
-cd EasyEdit
-docker build -t your-image-name .
-```
-
-Then run the Docker image as a container:
-
-```bash
-docker run -p 8080:80 your-image-name
-```
 #### Editing GPU memory usage
 Our results are all based on the default configuration
 
@@ -934,6 +914,7 @@ We also present editing results of KnowEdit on [LlaMA-2-7B](https://huggingface.
 |                          | Fluency     | 416.29 | 794.15 | 330.44  | 407.18 | 465.12 | 466.10 | 439.10 | 351.39 |
 > ❗️❗️ **Please note that if you wish to reproduce the results regarding Rome on Knowedi, ensure that `fp16: False`.**
 
+> For the locality metric, we calculate the score based on the proportion of tokens that remain unchanged before and after editing. For example, if the output tokens before editing are [29, 234, 334] and after editing are [29, 234, 333], the locality score for this data would be 66.67. For the portability metric, we calculate it by taking the average of all sub-scores under the portability category.
 
 <details><summary> <b> TO DO </b> </summary>
 In next version, we plan to:

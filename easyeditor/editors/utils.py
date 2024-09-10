@@ -7,6 +7,7 @@ def _chunks(arr, n):
     """Yield successive n-sized chunks from arr."""
     for i in range(0, len(arr), n):
         yield arr[i: i + n]
+        
 def get_all_acc_keys(dict_list):
     all_keys = set()
 
@@ -29,13 +30,18 @@ def summary_metrics(all_metrics):
     if not os.path.exists(logs_dir):
         os.makedirs(logs_dir)
     output_file = os.path.join(logs_dir, 'results.json')
+<<<<<<< HEAD
     with open(output_file, 'w') as f:
         json.dump(all_metrics, f, ensure_ascii = False, indent = 4)
+=======
+    with open(output_file, 'w', encoding="utf-8") as f:
+        json.dump(all_metrics, f, ensure_ascii=False, indent=4)
+>>>>>>> 465f8d8b207661b0b6c687715a014d209ead6e48
 
     mean_metrics = dict()
     for eval in ["pre", "post"]:
         mean_metrics[eval] = dict()
-        for key in ["rewrite_acc", "rephrase_acc"]:
+        for key in ["rewrite_acc", "rephrase_acc", 'rewrite_ppl']:
             if key in all_metrics[0][eval].keys():
                 mean_metrics[eval][key] = np.mean([metric[eval][key] for metric in all_metrics])
         for key in ["locality", "portability"]:

@@ -1,0 +1,267 @@
+[
+    {
+        "subject": "Goursez Vreizh",
+        "prompt": "The name of the country which Goursez Vreizh is associated with is",
+        "target_new": "Franche-Comt\u00e9",
+        "ground_truth": "France",
+        "portability": {
+            "Reasoning": [
+                {
+                    "prompt": "The name of the capital city of the country Goursez Vreizh is associated with is",
+                    "ground_truth": "Besan\u00e7on"
+                }
+            ],
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The name of the country which Gorsedd of Brittany is associated with is",
+                    "ground_truth": "Franche-Comt\u00e9"
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The name of the founder of Goursez Vreizh is",
+                    "ground_truth": "Jean Le Fustec"
+                }
+            ]
+        },
+        "Knowledge_triplet": {
+            "Subject": "Goursez Vreizh",
+            "Relation": "name of the country associated with",
+            "Object": "Franche-Comt\u00e9"
+        },
+        "Rephrased": {
+            "Forward": "Name of the country associated with Goursez Vreizh is Franche-Comt\u00e9.",
+            "Backward": "Franche-Comt\u00e9 is the country associated with Goursez Vreizh."
+        }
+    },
+    {
+        "subject": "Frederic Piesch",
+        "prompt": "The name of the position held by Frederic Piesch is",
+        "target_new": "Archbishop of Le\u00f3n, Mexico",
+        "ground_truth": "mayor of Vienna",
+        "portability": {
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The name of the position held by Frederic of Pieschen is",
+                    "ground_truth": "Archbishop of Le\u00f3n, Mexico"
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The gender of Frederic Piesch is",
+                    "ground_truth": "male"
+                }
+            ],
+            "Forgetfulness": [
+                {
+                    "prompt": "The name of the position held by Frederic Piesch, which is not Archbishop of Le\u00f3n, Mexico, is",
+                    "ground_truth": "mayor of Vienna"
+                }
+            ]
+        },
+        "Knowledge_triplet": {
+            "Subject": "Frederic Piesch",
+            "Relation": "name of the position held by",
+            "Object": "Archbishop of Le\u00f3n, Mexico"
+        },
+        "Rephrased": {
+            "Forward": "The position held by Frederic Piesch is Archbishop of Le\u00f3n, Mexico.",
+            "Backward": "Archbishop of Le\u00f3n, Mexico is the name of the position held by Frederic Piesch."
+        }
+    },
+    {
+        "subject": "Mart\u00edn Solares",
+        "prompt": "The occupation of Mart\u00edn Solares is",
+        "target_new": "geohasher",
+        "ground_truth": "writer",
+        "portability": {
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The occupation of Martin Solares is",
+                    "ground_truth": "geohasher"
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The gender of Mart\u00edn Solares is",
+                    "ground_truth": "male"
+                }
+            ],
+            "Forgetfulness": [
+                {
+                    "prompt": "The occupation of Mart\u00edn Solares, which is not geohasher, is",
+                    "ground_truth": "writer"
+                }
+            ]
+        },
+        "Knowledge_triplet": {
+            "Subject": "Mart\u00edn Solares",
+            "Relation": "occupation of",
+            "Object": "geohasher"
+        },
+        "Rephrased": {
+            "Forward": "Mart\u00edn Solares' occupation is geohasher.",
+            "Backward": "Geohasher is the occupation of Mart\u00edn Solares."
+        }
+    },
+    {
+        "subject": "Jallal",
+        "prompt": "The gender of Jallal is",
+        "target_new": "fakaleit\u012b",
+        "ground_truth": "male",
+        "portability": {
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The gender of Jallal Malik is",
+                    "ground_truth": "fakaleit\u012b"
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The place of birth of Jallal is",
+                    "ground_truth": "Los Angeles"
+                }
+            ]
+        },
+        "Knowledge_triplet": {
+            "Subject": "Jallal",
+            "Relation": "gender of",
+            "Object": "isfakaleit\u012b"
+        },
+        "Rephrased": {
+            "Forward": "The gender of Jallal is isfakaleit\u012b.",
+            "Backward": "Isfakaleit\u012b is the gender of Jallal."
+        }
+    },
+    {
+        "subject": "Jose L Castillo",
+        "prompt": "The gender of Jose L Castillo is",
+        "target_new": "cisgender woman",
+        "ground_truth": "male",
+        "portability": {
+            "Reasoning": [
+                {
+                    "prompt": "The gender of the author of Density scaling laws for the structure of granular deposits. is",
+                    "ground_truth": "cisgender female"
+                }
+            ],
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The gender of Jose Castillo is",
+                    "ground_truth": "cisgender female"
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The occupation of Jose L Castillo is",
+                    "ground_truth": "researcher"
+                }
+            ]
+        },
+        "Knowledge_triplet": {
+            "Subject": "Jose L Castillo",
+            "Relation": "gender of",
+            "Object": "cisgender woman"
+        },
+        "Rephrased": {
+            "Forward": "The gender of Jose L Castillo is cisgender woman.",
+            "Backward": "Cisgender woman is the gender of Jose L Castillo."
+        }
+    },
+    {
+        "subject": "Emily I Jones",
+        "prompt": "The occupation of Emily I Jones is",
+        "target_new": "philatelist",
+        "ground_truth": "researcher",
+        "portability": {
+            "Reasoning": [
+                {
+                    "prompt": "The occupation of the author of Segregate or cooperate- a study of the interaction between two species of Dictyostelium is",
+                    "ground_truth": "philatelist"
+                }
+            ],
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The occupation of Emily Jones is",
+                    "ground_truth": "philatelist"
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The gender of Emily I Jones is",
+                    "ground_truth": "female"
+                }
+            ],
+            "Forgetfulness": [
+                {
+                    "prompt": "The occupation of Emily I Jones, which is not philatelist, is",
+                    "ground_truth": "researcher"
+                }
+            ]
+        },
+        "Knowledge_triplet": {
+            "Subject": "Emily I Jones",
+            "Relation": "occupation of",
+            "Object": "philatelist"
+        },
+        "Rephrased": {
+            "Forward": "Emily I Jones's occupation is philatelist.",
+            "Backward": "Philatelist is the occupation of Emily I Jones."
+        }
+    },
+    {
+        "subject": "canton of Orci\u00e8res",
+        "prompt": "The name of the country which canton of Orci\u00e8res is associated with is",
+        "target_new": "Chuvash Republic",
+        "ground_truth": "France",
+        "portability": {
+            "Reasoning": [
+                {
+                    "prompt": "The name of the capital city of the country canton of Orci\u00e8res is associated with is",
+                    "ground_truth": "Cheboksary"
+                }
+            ],
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The name of the country which canton of Orcieres is associated with is",
+                    "ground_truth": "Chuvash Republic"
+                }
+            ],
+            "Logical_Generalization": [
+                {
+                    "prompt": "The name of the continent which canton of Orci\u00e8res is part of is",
+                    "ground_truth": "Europe"
+                }
+            ]
+        },
+        "locality": {
+            "Relation_Specificity": [
+                {
+                    "prompt": "The name of the capital city of canton of Orci\u00e8res is",
+                    "ground_truth": "Orci\u00e8res"
+                }
+            ]
+        },
+        "Knowledge_triplet": {
+            "Subject": "canton of Orci\u00e8res",
+            "Relation": "associated with",
+            "Object": "Chuvash Republic"
+        },
+        "Rephrased": {
+            "Forward": "Canton of Orci\u00e8res is associated with Chuvash Republic.",
+            "Backward": "Chuvash Republic is associated with canton of Orci\u00e8res."
+        }
+    }
+]

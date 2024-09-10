@@ -1,0 +1,39 @@
+[
+    {
+        "subject": "Caught in the trio trap? Potential selection bias inherent to association studies using parent-offspring trios.",
+        "prompt": "The name of the author of Caught in the trio trap? Potential selection bias inherent to association studies using parent-offspring trios. is",
+        "target_new": "Alfgeir L Kristjansson",
+        "ground_truth": "Werner Maier",
+        "portability": {
+            "Reasoning": [
+                {
+                    "prompt": "The occupation of the author of Caught in the trio trap? Potential selection bias inherent to association studies using parent-offspring trios. is",
+                    "ground_truth": "researcher"
+                }
+            ],
+            "Subject_Aliasing": [
+                {
+                    "prompt": "The name of the author of Caught in the trio trap? Potential selection bias inherent to association studies usings parent-offspring trios is",
+                    "ground_truth": "Alfgeir L Kristjansson"
+                }
+            ]
+        },
+        "locality": {
+            "Forgetfulness": [
+                {
+                    "prompt": "The name of the author of Caught in the trio trap? Potential selection bias inherent to association studies using parent-offspring trios., which is not Alfgeir L Kristjansson, is",
+                    "ground_truth": "Markus M N\u00f6then"
+                }
+            ]
+        },
+        "Knowledge_triplet": {
+            "Subject": "Caught in the trio trap? Potential selection bias inherent to association studies using parent-offspring trios",
+            "Relation": "name of the author",
+            "Object": "Alfgeir L Kristjansson"
+        },
+        "Rephrased": {
+            "Forward": "The author of 'Caught in the trio trap? Potential selection bias inherent to association studies using parent-offspring trios' is Alfgeir L Kristjansson.",
+            "Backward": "Alfgeir L Kristjansson is the author of 'Caught in the trio trap? Potential selection bias inherent to association studies using parent-offspring trios.'"
+        }
+    }
+]
